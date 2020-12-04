@@ -14,16 +14,30 @@ class TasksTableViewController: UITableViewController {
     // MARK: - Properties
     // Note! this is not a good, efficient way to do this, as the fetch request will be executed
     // every time the tasks property is accessed. We will learn a better way to do this later
-    var tasks: [Task] {
+//    var tasks: [Task] {
+//        let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
+//        let context = CoreDataStack.shared.mainContext
+//        do {
+//            return try context.fetch(fetchRequest)
+//        } catch {
+//            NSLog("Error fetching tasks: \(error)")
+//            return []
+//        }
+//    }
+    lazy var fetchedResulstsController: NSFetchedResultsController<Task> = {
         let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
-        let context = CoreDataStack.shared.mainContext
-        do {
-            return try context.fetch(fetchRequest)
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "priority", ascending: true), NSSortDescriptor(key: "name", ascending: true)]
+        let moc = CoreDataStack.shared.mainContext
+        let frc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: moc, sectionNameKeyPath: "priority", cacheName: nil)
+        frc.delegate = self
+//        try! frc.performFetch()
+        do{
+            try frc.performFetch()
         } catch {
-            NSLog("Error fetching tasks: \(error)")
-            return []
+            NSLog("Unable to fetch Tasks from main context")
         }
-    }
+        return frc
+    }()
     
     // MARK: - IBOutlets
     
@@ -36,9 +50,14 @@ class TasksTableViewController: UITableViewController {
 
     
     // MARK: - Table view data source
+    
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return fetchedResulstsController.sections?.count ?? 1
+    }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return tasks.count
+//        return tasks.count
+        return fetchedResulstsController.sections?[section].numberOfObjects ?? 0
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -47,20 +66,27 @@ class TasksTableViewController: UITableViewController {
         }
 
         // Configure the cell...
-        cell.task = tasks[indexPath.row]
+//        cell.task = tasks[indexPath.row]
+        cell.task = fetchedResulstsController.object(at: indexPath)
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        guard let sectionInfo = fetchedResulstsController.sections?[section] else { return nil }
+        return sectionInfo.name.capitalized
     }
 
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             // Delete the row from the data source
-            let task = tasks[indexPath.row]
+//            let task = tasks[indexPath.row]
+            let task = fetchedResulstsController.object(at: indexPath)
             let moc = CoreDataStack.shared.mainContext
             moc.delete(task)
             do {
                 try moc.save()
-                tableView.reloadData()
+//                tableView.reloadData()
             } catch {
                 moc.reset()
                 NSLog("Error saving manged object context: \(error)")
@@ -74,5 +100,54 @@ class TasksTableViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
+        if segue.identifier == "ToTaskDetail" {
+            if let detailVC = segue.destination as?
+            TaskDetailViewController,
+               let index = self.tableView.indexPathForSelectedRow {
+                detailVC.task = fetchedResulstsController.object(at: index)
+            }
+        }
+    }
+}
+
+extension TasksTableViewController: NSFetchedResultsControllerDelegate {
+    // MARK: NSFetchedResultsControllerDelegate
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        self.tableView.beginUpdates()
+    }
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        self.tableView.endUpdates()
+    }
+    // Sections
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
+        switch type {
+        case .insert:
+            tableView.insertSections(IndexSet(integer: sectionIndex), with: .automatic)
+        case .delete:
+            tableView.deleteSections(IndexSet(integer: sectionIndex), with: .automatic)
+        default:
+            break
+        }
+    }
+    // Rows
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        switch type {
+        case .insert:
+            guard let newIndexPath = newIndexPath else { return }
+            tableView.insertRows(at: [newIndexPath], with: .automatic)
+        case .update:
+            guard let indexPath = indexPath else { return }
+            tableView.reloadRows(at: [indexPath], with: .automatic)
+        case .move:
+            guard let oldIndexPath = indexPath,
+                  let newIndexPath = newIndexPath else { return }
+            tableView.deleteRows(at: [oldIndexPath], with: .automatic)
+            tableView.insertRows(at: [newIndexPath], with: .automatic)
+        case .delete:
+            guard let indexPath = indexPath else { return }
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+        default:
+            break
+        }
     }
 }
