@@ -24,6 +24,9 @@ class TasksTableViewController: UITableViewController {
 //            return []
 //        }
 //    }
+
+    let taskController = TaskController()
+    
     lazy var fetchedResulstsController: NSFetchedResultsController<Task> = {
         let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "priority", ascending: true), NSSortDescriptor(key: "name", ascending: true)]
@@ -47,7 +50,14 @@ class TasksTableViewController: UITableViewController {
         super.viewWillAppear(true)
         tableView.reloadData()
     }
-
+    @IBAction func refresh(_ sender: UIRefreshControl) {
+        taskController.fetchTasksFromServer { (_) in
+            DispatchQueue.main.async {
+                self.refreshControl?.endRefreshing()
+            }
+        }
+    }
+    
     
     // MARK: - Table view data source
     
@@ -67,6 +77,7 @@ class TasksTableViewController: UITableViewController {
 
         // Configure the cell...
 //        cell.task = tasks[indexPath.row]
+        cell.delegate = self
         cell.task = fetchedResulstsController.object(at: indexPath)
         return cell
     }
@@ -82,14 +93,17 @@ class TasksTableViewController: UITableViewController {
             // Delete the row from the data source
 //            let task = tasks[indexPath.row]
             let task = fetchedResulstsController.object(at: indexPath)
-            let moc = CoreDataStack.shared.mainContext
-            moc.delete(task)
-            do {
-                try moc.save()
-//                tableView.reloadData()
-            } catch {
-                moc.reset()
-                NSLog("Error saving manged object context: \(error)")
+            taskController.deleteTaskFromServer(task) { (result) in
+                guard let _ = try? result.get() else { return }
+                let moc = CoreDataStack.shared.mainContext
+                moc.delete(task)
+                do {
+                    try moc.save()
+                    //                tableView.reloadData()
+                } catch {
+                    moc.reset()
+                    NSLog("Error saving manged object context: \(error)")
+                }
             }
         }
     }
@@ -100,11 +114,17 @@ class TasksTableViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
+        
         if segue.identifier == "ToTaskDetail" {
             if let detailVC = segue.destination as?
             TaskDetailViewController,
                let index = self.tableView.indexPathForSelectedRow {
                 detailVC.task = fetchedResulstsController.object(at: index)
+                detailVC.taskController = taskController
+            }
+        } else if segue.identifier == "CreateTaskModalSegue" {
+            if let navVC = segue.destination as? UINavigationController, let createTaskVC = navVC.viewControllers.first as? CreateTaskViewController {
+                createTaskVC.taskController = taskController
             }
         }
     }
@@ -149,5 +169,11 @@ extension TasksTableViewController: NSFetchedResultsControllerDelegate {
         default:
             break
         }
+    }
+}
+
+extension TasksTableViewController: TaskCellDelegate {
+    func didUpdateTask(task: Task) {
+        taskController.sendTaskToServer(task: task)
     }
 }

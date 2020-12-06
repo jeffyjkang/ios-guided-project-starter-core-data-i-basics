@@ -8,6 +8,10 @@
 
 import UIKit
 
+protocol TaskCellDelegate: class {
+    func didUpdateTask(task: Task)
+}
+
 class TaskTableViewCell: UITableViewCell {
 
     // MARK: - Properties
@@ -18,6 +22,8 @@ class TaskTableViewCell: UITableViewCell {
             updateViews()
         }
     }
+    
+    weak var delegate: TaskCellDelegate?
     
     // MARK: - IBOutlets
     @IBOutlet weak var taskNameLabel: UILabel!
@@ -30,6 +36,7 @@ class TaskTableViewCell: UITableViewCell {
         completedButton.setImage((task.complete) ? UIImage(systemName: "checkmark.square.fill") : UIImage(systemName: "square"), for: .normal)
         do {
             try CoreDataStack.shared.mainContext.save()
+            delegate?.didUpdateTask(task: task)
         } catch {
             NSLog("Error saving manged object context: \(error)")
         }
@@ -40,6 +47,5 @@ class TaskTableViewCell: UITableViewCell {
         taskNameLabel.text = task.name
         completedButton.setImage((task.complete) ? UIImage(systemName: "checkmark.square.fill") : UIImage(systemName: "square"), for: .normal)
     }
-    
     
 }
