@@ -11,6 +11,8 @@
 		CC51221725739DB700B457FA /* Tasks.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = CC51221525739DB700B457FA /* Tasks.xcdatamodeld */; };
 		CC51221A25739F4E00B457FA /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC51221925739F4E00B457FA /* CoreDataStack.swift */; };
 		CC51221D2573A01B00B457FA /* Task+Convenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC51221C2573A01B00B457FA /* Task+Convenience.swift */; };
+		CC854F02257D548F000770FB /* TaskController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC854F01257D548F000770FB /* TaskController.swift */; };
+		CC854F06257D619E000770FB /* TaskRepresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC854F05257D619E000770FB /* TaskRepresentation.swift */; };
 		CEB451C8244E59CD00E5F9AD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB451C7244E59CD00E5F9AD /* AppDelegate.swift */; };
 		CEB451CA244E59CD00E5F9AD /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB451C9244E59CD00E5F9AD /* SceneDelegate.swift */; };
 		CEB451CF244E59CD00E5F9AD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CEB451CD244E59CD00E5F9AD /* Main.storyboard */; };
@@ -27,6 +29,8 @@
 		CC51221625739DB700B457FA /* Tasks.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Tasks.xcdatamodel; sourceTree = "<group>"; };
 		CC51221925739F4E00B457FA /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		CC51221C2573A01B00B457FA /* Task+Convenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Task+Convenience.swift"; sourceTree = "<group>"; };
+		CC854F01257D548F000770FB /* TaskController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskController.swift; sourceTree = "<group>"; };
+		CC854F05257D619E000770FB /* TaskRepresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRepresentation.swift; sourceTree = "<group>"; };
 		CEB451C4244E59CD00E5F9AD /* Tasks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tasks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEB451C7244E59CD00E5F9AD /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CEB451C9244E59CD00E5F9AD /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -56,8 +60,17 @@
 				CC51221525739DB700B457FA /* Tasks.xcdatamodeld */,
 				CC51221925739F4E00B457FA /* CoreDataStack.swift */,
 				CC51221C2573A01B00B457FA /* Task+Convenience.swift */,
+				CC854F05257D619E000770FB /* TaskRepresentation.swift */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		CC854F00257D5471000770FB /* Model Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				CC854F01257D548F000770FB /* TaskController.swift */,
+			);
+			path = "Model Controllers";
 			sourceTree = "<group>";
 		};
 		CEB451BB244E59CD00E5F9AD = {
@@ -79,10 +92,11 @@
 		CEB451C6244E59CD00E5F9AD /* Tasks */ = {
 			isa = PBXGroup;
 			children = (
-				CC51221425739D8000B457FA /* Model */,
 				CEB451E1244E5B5700E5F9AD /* Application */,
-				CEB451E2244E5B6000E5F9AD /* View Controllers */,
+				CC51221425739D8000B457FA /* Model */,
+				CC854F00257D5471000770FB /* Model Controllers */,
 				CEB451E3244E5B6900E5F9AD /* Views */,
+				CEB451E2244E5B6000E5F9AD /* View Controllers */,
 				CEB451D0244E59CF00E5F9AD /* Assets.xcassets */,
 				CEB451D2244E59CF00E5F9AD /* LaunchScreen.storyboard */,
 				CEB451D5244E59CF00E5F9AD /* Info.plist */,
@@ -197,6 +211,8 @@
 				CC51221D2573A01B00B457FA /* Task+Convenience.swift in Sources */,
 				CEB451DE244E5B3E00E5F9AD /* TasksTableViewController.swift in Sources */,
 				CEB451DC244E5B3300E5F9AD /* TaskTableViewCell.swift in Sources */,
+				CC854F06257D619E000770FB /* TaskRepresentation.swift in Sources */,
+				CC854F02257D548F000770FB /* TaskController.swift in Sources */,
 				CEB451E0244E5B4800E5F9AD /* CreateTaskViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

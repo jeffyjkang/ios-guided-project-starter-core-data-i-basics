@@ -12,6 +12,7 @@ class CreateTaskViewController: UIViewController {
 
     // MARK: - Properties
     var complete = false
+    var taskController: TaskController?
     
     // MARK: - IBOutlets
     @IBOutlet weak var nameTextField: UITextField!
@@ -28,7 +29,8 @@ class CreateTaskViewController: UIViewController {
         let notes = notesTextView.text
         let priorityIndex = prioritySegmentedControl.selectedSegmentIndex
         let priority = TaskPriority.allCases[priorityIndex]
-        Task(name: name, notes: notes, complete: complete, priority: priority)
+        let task = Task(name: name, notes: notes, complete: complete, priority: priority)
+        taskController?.sendTaskToServer(task: task)
         do {
             try CoreDataStack.shared.mainContext.save()
             navigationController?.dismiss(animated: true, completion: nil)
