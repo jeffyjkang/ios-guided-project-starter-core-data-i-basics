@@ -104,6 +104,8 @@ class TaskController {
     }
     
     private func updateTasks(with representations: [TaskRepresentation]) throws {
+        let context = CoreDataStack.shared.container.newBackgroundContext()
+        
         let identifiersToFetch = representations.compactMap({UUID(uuidString: $0.identifier)})
         
         let representationsByID = Dictionary(uniqueKeysWithValues: zip(identifiersToFetch, representations))
@@ -112,29 +114,52 @@ class TaskController {
         let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "identifier IN %@", identifiersToFetch)
         
-        let context = CoreDataStack.shared.mainContext
-        
-        do {
-            let existingTasks = try context.fetch(fetchRequest)
-            // update existing
-            for task in existingTasks {
-                guard let id = task.identifier, let representation = representationsByID[id] else { continue }
-                // we already have the task, so we should update
-                task.name = representation.name
-                task.notes = representation.notes
-                task.priority = representation.priority
-                task.complete = representation.complete
-                
-                tasksToCreate.removeValue(forKey: id)
+//        let context = CoreDataStack.shared.mainContext
+        context.performAndWait {
+            do {
+                let existingTasks = try context.fetch(fetchRequest)
+                // update existing
+                for task in existingTasks {
+                    guard let id = task.identifier, let representation = representationsByID[id] else { continue }
+                    // we already have the task, so we should update
+                    task.name = representation.name
+                    task.notes = representation.notes
+                    task.priority = representation.priority
+                    task.complete = representation.complete
+                    
+                    tasksToCreate.removeValue(forKey: id)
+                }
+                // create new
+                for representation in tasksToCreate.values {
+                    Task(taskRepresentation: representation, context: context)
+                }
+            } catch {
+                print("Error fetching tasks for UUIDs: \(error)")
             }
-            // create new
-            for representation in tasksToCreate.values {
-                Task(taskRepresentation: representation, context: context)
-            }
-        } catch {
-            print("Error fetching tasks for UUIDs: \(error)")
         }
-        try CoreDataStack.shared.mainContext.save()
+        try CoreDataStack.shared.save(context: context)
+        
+//        do {
+//            let existingTasks = try context.fetch(fetchRequest)
+//            // update existing
+//            for task in existingTasks {
+//                guard let id = task.identifier, let representation = representationsByID[id] else { continue }
+//                // we already have the task, so we should update
+//                task.name = representation.name
+//                task.notes = representation.notes
+//                task.priority = representation.priority
+//                task.complete = representation.complete
+//
+//                tasksToCreate.removeValue(forKey: id)
+//            }
+//            // create new
+//            for representation in tasksToCreate.values {
+//                Task(taskRepresentation: representation, context: context)
+//            }
+//        } catch {
+//            print("Error fetching tasks for UUIDs: \(error)")
+//        }
+//        try CoreDataStack.shared.mainContext.save()
     }
     
     private func update(task: Task, with representation: TaskRepresentation) {
